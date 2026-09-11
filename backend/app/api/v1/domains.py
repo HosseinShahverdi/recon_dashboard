@@ -3,8 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.session import get_db
 from app.db.models import Domain
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
+from typing import List
 
 router = APIRouter()
 
@@ -12,12 +13,11 @@ class DomainCreate(BaseModel):
     name: str
 
 class DomainOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     name: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 @router.post("/", response_model=DomainOut)
 async def create_domain(domain_in: DomainCreate, db: AsyncSession = Depends(get_db)):
@@ -34,7 +34,7 @@ async def create_domain(domain_in: DomainCreate, db: AsyncSession = Depends(get_
     await db.refresh(new_domain)
     return new_domain
 
-@router.get("/", response_model=list[DomainOut])
+@router.get("/", response_model=List[DomainOut])
 async def list_domains(db: AsyncSession = Depends(get_db)):
     stmt = select(Domain).order_by(Domain.created_at.desc())
     result = await db.execute(stmt)

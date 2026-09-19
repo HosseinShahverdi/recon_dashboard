@@ -2,7 +2,6 @@ import asyncio
 from app.scanners.subfinder import SubfinderScanner
 from app.scanners.findomain import FindomainScanner
 from app.scanners.assetfinder import AssetfinderScanner
-from backend.app.api.v1 import domains
 
 REGISTRY = {
     "subfinder": SubfinderScanner,

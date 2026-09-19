@@ -55,6 +55,11 @@ class Asset(Base):
     webserver: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     tech_stack: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     
+    scheme: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    length: Mapped[Optional[int]] = mapped_column(nullable=True)
+    cname: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    asn: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
     domain: Mapped["Domain"] = relationship(back_populates="assets")
     observations: Mapped[List["Observation"]] = relationship(back_populates="asset", cascade="all, delete-orphan")
 
@@ -73,6 +78,11 @@ class Observation(Base):
     title: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     webserver: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     tech_stack: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    
+    scheme: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    length: Mapped[Optional[int]] = mapped_column(nullable=True)
+    cname: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    asn: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     
     scan: Mapped["Scan"] = relationship(back_populates="observations")
     asset: Mapped["Asset"] = relationship(back_populates="observations")

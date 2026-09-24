@@ -7,6 +7,8 @@ from app.db.session import async_session
 from app.db.models import Scan, Domain, Asset, Observation
 from app.services.orchestrator import discover, PRESETS
 from app.scanners.httpx_probe import HttpxProbe
+from app.services.diff_engine import mark_gone_assets
+
 
 # TEACH POINT: keep references to background tasks or Python may garbage-collect them mid-run
 BACKGROUND_TASKS: set[asyncio.Task] = set()
@@ -62,4 +64,7 @@ async def run_scan(scan_id: int):
         scan.new_count = new_count
         scan.status = "completed"
         scan.finished_at = datetime.now(timezone.utc)
+        
+        await mark_gone_assets(db, domain.id,scan.id)
+        
         await db.commit()

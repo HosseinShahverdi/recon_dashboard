@@ -1,154 +1,156 @@
-```markdown
 <div align="center">
 
-# 🔭 RECON//OS
+# RECON//OS
 
-### The Professional Subdomain Reconnaissance Dashboard
+**Subdomain reconnaissance dashboard with built-in change tracking**
+
+_Orchestrate. Discover. Diff. All from one dark-mode console._
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
 
-_Orchestrate. Discover. Analyze. — All in one dark-mode cockpit._
+[Features](#features) · [Architecture](#architecture) · [Installation](#installation) · [Usage](#usage) · [Roadmap](#roadmap)
 
-[Features](#-features) • [Architecture](#-architecture) • [Installation](#-installation) • [Roadmap](#-roadmap)
+<!-- Replace with a screenshot or the demo GIF of the running app -->
+<img src="docs/demo.gif" alt="RECON//OS dashboard: a re-scan flags a new subdomain" width="820">
 
 </div>
 
 ---
 
-## 🎯 Overview
+## Overview
 
-**RECON//OS** is a full-stack reconnaissance dashboard that transforms the chaos of 12+ CLI tools into a unified, searchable, and visual asset inventory. Built for bug bounty hunters, penetration testers, and security researchers who need to track subdomain changes over time.
+RECON//OS turns a pile of recon CLI tools into one searchable asset inventory. It runs `subfinder`, `httpx`, `shuffledns` and friends concurrently in the background, merges their output, and stores every scan so you can see **what changed** between runs. It is built for bug bounty hunters, penetration testers and security researchers who monitor targets over time.
 
-Instead of juggling `subfinder`, `httpx`, `amass`, and `shuffledns` in terminal windows, RECON//OS runs them concurrently in the background, correlates the results, and presents them in a professional dark-mode UI with Three.js particle effects.
+### The diff engine
 
-### The "Diff Engine" Advantage
+Most recon tooling is stateless: it shows what exists _now_. RECON//OS keeps history and labels every asset after each scan:
 
-Most recon tools are stateless — they show you what exists _now_. RECON//OS tracks **history**:
+| Label       | Meaning                                                             |
+| ----------- | ------------------------------------------------------------------- |
+| **NEW**     | Subdomain seen for the first time                                   |
+| **CHANGED** | Status code, IP or technologies differ from the previous scan       |
+| **GONE**    | Present in earlier scans, absent now (decommissioned or firewalled) |
 
-- 🆕 **NEW** — Subdomains discovered for the first time
-- 🔄 **CHANGED** — Status codes, IPs, or technologies that flipped
-- 💀 **GONE** — Assets that disappeared (decommissioned or firewalled)
-
-This is how you spot the subtle changes that lead to critical vulnerabilities.
-
----
-
-## ✨ Features
-
-### 🚀 Multi-Tool Orchestration
-
-Concurrently run the industry's best tools via a single **Quick** or **Deep** scan button:
-
-| Category         | Tools                                                                      |
-| ---------------- | -------------------------------------------------------------------------- |
-| **Passive Enum** | `subfinder`, `findomain`, `assetfinder`, `amass`, `sublist3r`, `oneforall` |
-| **Active DNS**   | `shuffledns` + `massdns` (brute-force), `dnsx`, `gobuster`, `dnsrecon`     |
-| **HTTP Probing** | `httpx` (status, title, tech, CDN), `nuclei`                               |
-| **Screenshots**  | `gowitness`, `eyewitness`                                                  |
-
-### 🧠 Intelligent Processing
-
-- **Wildcard DNS Detection** — Automatically identifies `*.domain.com` patterns and flags them, preventing false positives from brute-force
-- **Async Pipeline** — All tools run via `asyncio` subprocesses without blocking the API
-- **Diff Engine** — Compares current scan against history to identify NEW/CHANGED/GONE assets
-- **Enrichment Layer** — Even "dead" hosts get IP/CNAME resolution via `dnsx`
-
-### 🎨 Pro UI
-
-- **Three.js Ambient Background** — Subtle particle field with vignette
-- **JetBrains Mono** — Monospace typography for terminal-native eyes
-- **Status Strips** — Color-coded left borders (2xx green, 3xx blue, 4xx orange, 5xx red)
-- **NEW Badges** — Yellow highlights for first-seen subdomains
-- **Filter Chips** — One-click filtering by status class, CDN, or "new only"
+New and changed assets are where fresh attack surface tends to appear.
 
 ---
 
-## 🏗️ Architecture
+## Features
+
+### Multi-tool orchestration
+
+Start a **Quick** or **Deep** scan with one click. Tools run concurrently as async subprocesses, so the API never blocks.
+
+| Category               | Tools                                            | Status                                          |
+| ---------------------- | ------------------------------------------------ | ----------------------------------------------- |
+| Passive enumeration    | `subfinder`, `findomain`                         | Available                                       |
+| Passive enumeration    | `amass`, `assetfinder`, `sublist3r`, `oneforall` | Installed by the setup script, adapters planned |
+| Active DNS             | `shuffledns` + `massdns`, `dnsx`                 | Available                                       |
+| Active DNS             | `gobuster`, `dnsrecon`                           | Installed by the setup script, adapters planned |
+| HTTP probing           | `httpx` (status, title, tech, CDN)               | Available                                       |
+| Vulnerability scanning | `nuclei`                                         | Planned (v1.2)                                  |
+| Screenshots            | `gowitness`, `eyewitness`                        | Planned (v1.2)                                  |
+
+### Processing pipeline
+
+- **Wildcard DNS detection** flags `*.domain.com` patterns so brute-forcing doesn't flood results with false positives.
+- **Enrichment** resolves IP and CNAME through `dnsx`, even for hosts that don't answer over HTTP.
+- **Diff engine** compares each scan against history to assign NEW, CHANGED and GONE.
+
+### Interface
+
+- Color-coded status strips: 2xx green, 3xx blue, 4xx orange, 5xx red
+- Yellow **NEW** badges on first-seen subdomains
+- Filter chips for status class, CDN, dead hosts, starred and new-only
+- Search by subdomain, title or IP
+- Three.js particle background and JetBrains Mono typography
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (React + Vite)                  │
+│  ┌──────────┐  ┌───────────────┐  ┌──────────────────────┐  │
+│  │ Three.js │  │  Dashboard    │  │  Zustand store       │  │
+│  │ particles│  │  table/stats  │  │  (single source)     │  │
+│  └──────────┘  └───────────────┘  └──────────────────────┘  │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ REST API (JSON)
+┌──────────────────────────▼──────────────────────────────────┐
+│                    BACKEND (FastAPI)                        │
+│                                                             │
+│  API routes → Orchestrator → Scanner adapters → Diff engine │
+│               (asyncio.gather)  (subprocess)                │
+└────────────┬────────────────────────────────┬───────────────┘
+             │                                │
+    ┌────────▼─────────┐            ┌─────────▼─────────┐
+    │  CLI binaries    │            │  SQLite (async)   │
+    │  subfinder       │            │  - domains        │
+    │  httpx           │            │  - scans          │
+    │  shuffledns      │            │  - assets         │
+    │  ...             │            │  - observations   │
+    └──────────────────┘            └───────────────────┘
 ```
 
-┌─────────────────────────────────────────────────────────────┐
-│ FRONTEND (React + Vite) │
-│ ┌──────────┐ ┌───────────────┐ ┌──────────────────────┐ │
-│ │ Three.js │ │ Dashboard │ │ Zustand Store │ │
-│ │ Particles│ │ Table/Stats │ │ (single source) │ │
-│ └──────────┘ └───────────────┘ └──────────────────────┘ │
-└──────────────────────────┬──────────────────────────────────┘
-│ REST API (JSON)
-┌──────────────────────────▼──────────────────────────────────┐
-│ BACKEND (FastAPI) │
-│ │
-│ API Routes → Orchestrator → Scanner Adapters → Diff Engine │
-│ (asyncio.gather) (subprocess) │
-└────────────┬────────────────────────────────┬───────────────┘
-│ │
-┌────────▼─────────┐ ┌─────────▼─────────┐
-│ CLI Binaries │ │ SQLite (async) │
-│ subfinder │ │ - domains │
-│ httpx │ │ - scans │
-│ shuffledns │ │ - assets │
-│ amass │ │ - observations │
-│ ... │ │ │
-└──────────────────┘ └───────────────────┘
+### Design decisions
 
-````
+1. **Asset vs. observation.** An `Asset` is the persistent identity (the subdomain); an `Observation` is its per-scan snapshot. This split is what makes history and diffing cheap.
+2. **Adapter pattern.** Each tool is a class inheriting `BaseScanner` and returning a standardized `set[str]`. Adding or swapping a tool never touches the orchestrator.
+3. **Absolute binary paths.** `settings.gobin()` resolves tools explicitly, avoiding PATH shadowing such as Python `httpx` versus ProjectDiscovery `httpx`.
+4. **Background tasks.** `POST /scans` returns `202 Accepted` immediately and progress is polled. WebSocket streaming is planned.
 
-### Key Design Decisions
+### Tech stack
 
-1. **Asset vs. Observation** — `Asset` = persistent identity (subdomain), `Observation` = per-scan snapshot. This separation enables history tracking.
-2. **Adapter Pattern** — Each tool is a class inheriting from `BaseScanner`, returning a standardized `set[str]`. Swap tools without touching orchestrator logic.
-3. **Absolute Binary Paths** — Uses `settings.gobin()` to prevent PATH shadowing (the infamous Python `httpx` vs Go `httpx` conflict).
-4. **Background Tasks** — Scans return `202 Accepted` instantly; progress is polled (or streamed via WebSocket in v2).
+| Layer       | Technology                           | Why                                     |
+| ----------- | ------------------------------------ | --------------------------------------- |
+| Backend     | FastAPI, SQLAlchemy 2.0, Pydantic v2 | Async-first, typed, auto-generated docs |
+| Database    | SQLite via aiosqlite                 | Zero config, single portable file       |
+| Frontend    | React 18, Vite, Tailwind CSS v4      | Fast dev loop, utility-first styling    |
+| 3D          | Three.js via @react-three/fiber      | Declarative scene graph in React        |
+| State       | Zustand                              | Small, minimal boilerplate              |
+| Recon tools | External CLIs (Go, Rust, Python)     | Mature, fast, run as subprocesses       |
 
 ---
 
-## 📦 Tech Stack
-
-| Layer | Technology | Why |
-|-------|------------|-----|
-| **Backend** | FastAPI, SQLAlchemy 2.0, Pydantic v2 | Async-first, type-safe, auto-docs |
-| **Database** | SQLite (via aiosqlite) | Zero-config, single-file, portable |
-| **Frontend** | React 18, Vite, Tailwind CSS v4 | Fast HMR, modern CSS-in-JS |
-| **3D** | Three.js via @react-three/fiber | Declarative 3D, no memory leaks |
-| **State** | Zustand | Tiny, no boilerplate |
-| **Tools** | Go binaries (subfinder, httpx, etc.) | Battle-tested, fast, concurrent |
-
----
-
-## 🛠️ Installation
+## Installation
 
 ### Prerequisites
-- **Python 3.12+**
-- **Node.js 20+**
-- **Go 1.22+** (for tool compilation)
-- **WSL2** (recommended for Windows users)
 
-### 1. Clone & Setup
+- Python 3.12+
+- Node.js 20+
+- Go 1.22+ (to build the recon tools)
+- WSL2 on Windows (recommended)
+
+### 1. Clone
+
 ```bash
-git clone https://github.com/yourusername/recon-dashboard.git
+git clone https://github.com/<your-username>/recon-dashboard.git
 cd recon-dashboard
-````
+```
 
-### 2. Install Recon Tools
+### 2. Install the recon tools
 
 ```bash
 chmod +x scripts/install_tools.sh
 ./scripts/install_tools.sh
 ```
 
-This script installs:
+The script installs:
 
-- All ProjectDiscovery tools (subfinder, httpx, dnsx, nuclei, shuffledns)
+- ProjectDiscovery tools: `subfinder`, `httpx`, `dnsx`, `nuclei`, `shuffledns`
 - OWASP Amass
-- massdns (compiled from source)
-- findomain (Rust binary)
-- Python tools (dnsrecon, sublist3r, oneforall)
-- Wordlists (top 110k subdomains + public resolvers)
+- `massdns` (built from source)
+- `findomain` (Rust binary)
+- Python tools: `dnsrecon`, `sublist3r`, `oneforall`
+- Wordlists: top 110k subdomains and public resolvers
 
-### 3. Backend
+### 3. Start the backend
 
 ```bash
 cd backend
@@ -158,7 +160,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
 
-### 4. Frontend
+### 4. Start the frontend
 
 ```bash
 cd frontend
@@ -166,18 +168,22 @@ npm install
 npm run dev
 ```
 
-### 5. Access
+### 5. Open it
 
-- **API Docs:** `http://localhost:8000/docs` (Swagger UI)
-- **Dashboard:** `http://localhost:5173`
+| Service            | URL                        |
+| ------------------ | -------------------------- |
+| Dashboard          | http://localhost:5173      |
+| API docs (Swagger) | http://localhost:8000/docs |
+
+> **Note:** v1 has no authentication. Keep it bound to `localhost` and don't expose the API to a network you don't control.
 
 ---
 
-## 📖 Usage
+## Usage
 
-### 1. Add a Domain
+### 1. Add a domain
 
-Click the **+** button or use the API:
+Use the **+** button in the top bar, or call the API:
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/domains/ \
@@ -185,158 +191,132 @@ curl -X POST http://localhost:8000/api/v1/domains/ \
   -d '{"name": "example.com"}'
 ```
 
-### 2. Run a Scan
+### 2. Run a scan
 
-- **⚡ Quick** — Passive tools only (subfinder + findomain). Fast, ~30 seconds.
-- **🔥 Deep** — Passive + Brute-force (shuffledns + 110k wordlist). Slower, finds hidden subdomains.
+| Mode      | What runs                                                              | Use it for                                     |
+| --------- | ---------------------------------------------------------------------- | ---------------------------------------------- |
+| **Quick** | Passive sources only (`subfinder`, `findomain`)                        | Fast checks and routine re-scans               |
+| **Deep**  | Passive sources plus brute-force (`shuffledns` with the 110k wordlist) | Finding hidden subdomains, at the cost of time |
 
-### 3. Analyze Results
+### 3. Analyze results
 
-- **Stat Cards** — Total assets, new discoveries, live hosts, CDN usage
-- **Filter Chips** — `2xx`, `3xx`, `4xx`, `5xx`, `dead`, `new only`, `starred`
-- **Search** — Filter by subdomain, title, or IP
-- **Export** — CSV, JSON, or TXT (coming in v1.1)
+- **Stat cards:** total assets, new discoveries, live hosts, CDN usage
+- **Filter chips:** `2xx`, `3xx`, `4xx`, `5xx`, `dead`, `new only`, `starred`
+- **Search:** subdomain, title or IP
+- **Export:** CSV, JSON and TXT (planned for v1.1)
 
-### 4. Track Changes
+### 4. Track changes
 
 Run the same scan again. The diff engine will:
 
-- Mark new subdomains with a yellow **NEW** badge
-- Highlight status code changes (e.g., 200 → 403)
-- Gray out "gone" assets (toggle "hide gone" to filter)
+- badge new subdomains with a yellow **NEW**
+- highlight status changes such as `200 → 403`
+- gray out gone assets (toggle **hide gone** to remove them)
 
 ---
 
-## 📂 Project Structure
+## Project structure
 
 ```
 recon-dashboard/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py              # FastAPI entry, lifespan, CORS
-│   │   ├── core/
-│   │   │   └── config.py        # Settings, gobin() path resolver
+│   │   ├── main.py               # FastAPI entry, lifespan, CORS
+│   │   ├── core/config.py        # Settings, gobin() path resolver
 │   │   ├── db/
-│   │   │   ├── models.py        # Domain, Scan, Asset, Observation
-│   │   │   └── session.py       # Async engine + session maker
+│   │   │   ├── models.py         # Domain, Scan, Asset, Observation
+│   │   │   └── session.py        # Async engine and session maker
 │   │   ├── api/v1/
-│   │   │   ├── domains.py       # CRUD for target domains
-│   │   │   ├── scans.py         # POST /scans, GET /scans/{id}
-│   │   │   ├── assets.py        # Filtered asset list
-│   │   │   ├── stats.py         # Stat card aggregations
-│   │   │   └── tools.py         # Tool health check
+│   │   │   ├── domains.py        # CRUD for target domains
+│   │   │   ├── scans.py          # POST /scans, GET /scans/{id}
+│   │   │   ├── assets.py         # Filtered asset list
+│   │   │   ├── stats.py          # Stat card aggregations
+│   │   │   └── tools.py          # Tool health check
 │   │   ├── services/
-│   │   │   ├── orchestrator.py  # asyncio.gather over scanners
-│   │   │   ├── scan_manager.py  # Background task pipeline
-│   │   │   ├── wildcard.py      # Wildcard DNS detection
-│   │   │   └── diff_engine.py   # NEW/CHANGED/GONE logic
-│   │   └── scanners/            # ONE adapter per tool
-│   │       ├── base.py          # BaseScanner abstract class
+│   │   │   ├── orchestrator.py   # asyncio.gather over scanners
+│   │   │   ├── scan_manager.py   # Background task pipeline
+│   │   │   ├── wildcard.py       # Wildcard DNS detection
+│   │   │   └── diff_engine.py    # NEW / CHANGED / GONE logic
+│   │   └── scanners/             # One adapter per tool
+│   │       ├── base.py           # BaseScanner abstract class
 │   │       ├── subfinder.py
 │   │       ├── httpx_probe.py
 │   │       ├── shuffledns.py
 │   │       └── dnsx_resolve.py
-│   ├── wordlists/               # subdomains-top110k.txt, resolvers.txt
-│   └── data/                    # recon.db (SQLite)
-│
+│   ├── wordlists/                # subdomains-top110k.txt, resolvers.txt
+│   └── data/                     # recon.db (SQLite)
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx              # Main layout
-│   │   ├── three/
-│   │   │   └── ParticleField.jsx # Ambient 3D background
+│   │   ├── App.jsx               # Main layout
+│   │   ├── three/ParticleField.jsx
 │   │   ├── components/
-│   │   │   ├── Topbar.jsx       # Domain selector + scan buttons
-│   │   │   ├── StatCards.jsx    # 7 stat cards
-│   │   │   ├── FilterBar.jsx    # Status chips + toggles
-│   │   │   └── ResultsTable.jsx # Main data table
-│   │   ├── store/
-│   │   │   └── useReconStore.js # Zustand state management
-│   │   └── services/
-│   │       └── api.js           # API client wrapper
+│   │   │   ├── Topbar.jsx        # Domain selector and scan buttons
+│   │   │   ├── StatCards.jsx
+│   │   │   ├── FilterBar.jsx     # Status chips and toggles
+│   │   │   └── ResultsTable.jsx
+│   │   ├── store/useReconStore.js
+│   │   └── services/api.js       # API client
 │   └── vite.config.js
-│
-├── scripts/
-│   └── install_tools.sh         # One-shot tool installer
+├── scripts/install_tools.sh      # One-shot tool installer
+├── LICENSE
 └── README.md
 ```
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap
 
-### v1.1 (Next)
+**v1.1**
 
-- [ ] WebSocket live scan progress (replace polling)
-- [ ] Build Scan modal with generated `recon.sh` script
-- [ ] Export menu (CSV, JSON, TXT, screenshots)
-- [ ] Columns menu (toggle visibility, persist to localStorage)
+- [ ] WebSocket live scan progress (replacing polling)
+- [ ] Build-scan modal that generates a `recon.sh` script
+- [ ] Export menu: CSV, JSON, TXT
+- [ ] Column visibility menu, persisted to localStorage
 - [ ] Scan history timeline
 
-### v1.2
+**v1.2**
 
-- [ ] Nuclei integration (vulnerability scanning)
+- [ ] Nuclei integration
 - [ ] Screenshot gallery (gowitness)
 - [ ] Subdomain takeover detection (dangling CNAMEs)
-- [ ] ASN/Port enrichment (naabu + masscan)
+- [ ] ASN and port enrichment (naabu, masscan)
+- [ ] Adapters for amass, assetfinder, sublist3r, oneforall, gobuster, dnsrecon
 
-### v2.0
+**v2.0**
 
-- [ ] Multi-user support
-- [ ] Postgres backend (production-ready)
-- [ ] 3D subdomain graph (Three.js)
-- [ ] Alerting (webhooks for NEW/CHANGED assets)
-
----
-
-## 🤝 Contributing
-
-Contributions welcome! Areas of interest:
-
-- New scanner adapters (e.g., `amass`, `oneforall`)
-- UI improvements (export, columns, history)
-- Bug fixes (wildcard edge cases, diff logic)
-
-Please open an issue first to discuss major changes.
+- [ ] Authentication and multi-user support
+- [ ] PostgreSQL backend
+- [ ] 3D subdomain graph
+- [ ] Webhook alerts for NEW and CHANGED assets
 
 ---
 
-## ⚠️ Disclaimer
+## Contributing
 
-This tool is for **authorized security testing only**. Scanning domains you do not own or have explicit permission to test may violate laws (CFAA, Computer Misuse Act, etc.). The authors assume no liability for misuse.
+Contributions are welcome, especially:
+
+- new scanner adapters (subclass `BaseScanner`)
+- UI work: export, columns, history
+- bug fixes in wildcard handling and diff logic
+
+Please open an issue before starting a large change.
 
 ---
 
-## 📄 License
+## Responsible use
 
-MIT License — see [LICENSE](LICENSE) for details.
+Use RECON//OS only against domains you own or have explicit written permission to test, such as an in-scope bug bounty program. Unauthorized scanning may violate laws including the CFAA and the Computer Misuse Act. The authors accept no liability for misuse.
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
 
-**Built with 🔥 by security engineers, for security engineers.**
-
-_If this tool helps you find a bug, consider starring the repo!_
+If RECON//OS helps you find a bug, consider giving it a star.
 
 </div>
-```
-
-This README is designed to look professional on GitHub. Key elements:
-
-1. **Hero section** with badges and tagline
-2. **Clear value proposition** — what makes it different
-3. **Architecture diagram** — shows engineering depth
-4. **Feature tables** — scannable, professional
-5. **Complete installation guide** — reproducible
-6. **Project structure tree** — shows organization
-7. **Roadmap** — shows vision and future work
-8. **Disclaimer** — responsible disclosure
-
-You can enhance it further by:
-
-- Adding a screenshot/GIF of the dashboard
-- Adding a LICENSE file (MIT recommended)
-- Creating a GitHub repo with proper topics (`bug-bounty`, `recon`, `subdomain-enumeration`)
-- Adding CI/CD badges (GitHub Actions for linting/tests)
-
-Let me know if you want me to create the LICENSE file or help set up GitHub Actions for automated testing!

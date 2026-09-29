@@ -33,6 +33,15 @@ async def run_scan(scan_id: int):
 
         tools = PRESETS.get(scan.mode, PRESETS["quick"])
         found = await discover(domain.name, tools)
+        
+        if not found:
+            # TEACH POINT: empty result = treat as failure, NOT as "everything died".
+            # Protects the inventory from one rate-limited tool run.
+            scan.status = "failed"
+            scan.finished_at = datetime.now(timezone.utc)
+            await db.commit()
+            return
+        
         enriched = await HttpxProbe().probe(sorted(found))
 
         new_count = 0

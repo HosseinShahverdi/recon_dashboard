@@ -62,7 +62,8 @@ class Asset(Base):
     
     domain: Mapped["Domain"] = relationship(back_populates="assets")
     observations: Mapped[List["Observation"]] = relationship(back_populates="asset", cascade="all, delete-orphan")
-
+    is_wildcard: Mapped[bool] = mapped_column(Boolean, default=False)
+    
 class Observation(Base):
     __tablename__ = "observations"
     __table_args__ = (UniqueConstraint('scan_id', 'asset_id', name='_scan_asset_uc'),)
@@ -86,3 +87,4 @@ class Observation(Base):
     
     scan: Mapped["Scan"] = relationship(back_populates="observations")
     asset: Mapped["Asset"] = relationship(back_populates="observations")
+    is_wildcard: Mapped[bool] = mapped_column(Boolean, default=False)

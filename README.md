@@ -76,7 +76,7 @@ Start a **Quick** or **Deep** scan with one click. Tools run concurrently as asy
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    FRONTEND (React + Vite)                  │
 │  ┌──────────┐  ┌───────────────┐  ┌──────────────────────┐  │
@@ -254,10 +254,10 @@ pytest -v
 
 Coverage (8 tests):
 
-| File                     | What it verifies                                                        |
-| ------------------------ | ----------------------------------------------------------------------- |
+| File                        | What it verifies                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `tests/test_diff_engine.py` | Unseen assets marked GONE; seen assets stay alive; returning assets revive; other domains untouched; empty history is safe |
-| `tests/test_api.py`         | Health endpoint; domain creation; duplicate-domain rejection            |
+| `tests/test_api.py`         | Health endpoint; domain creation; duplicate-domain rejection                                                               |
 
 Fixtures live in `tests/conftest.py` (fresh engine + session per test, sample domain/scan factories).
 
@@ -265,59 +265,51 @@ Fixtures live in `tests/conftest.py` (fresh engine + session per test, sample do
 
 ## Project structure
 
-```
+```text
 recon-dashboard/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py                  # FastAPI entry, lifespan, CORS
-│   │   ├── core/
-│   │   │   └── config.py            # Settings, gobin() path resolver
+│   │   ├── main.py               # FastAPI entry, lifespan, CORS
+│   │   ├── core/config.py        # Settings, gobin() path resolver
 │   │   ├── db/
-│   │   │   ├── models.py            # Domain, Scan, Asset, Observation
-│   │   │   └── session.py           # Async engine + session maker
+│   │   │   ├── models.py         # Domain, Scan, Asset, Observation
+│   │   │   └── session.py        # Async engine and session maker
 │   │   ├── api/v1/
-│   │   │   ├── domains.py           # Target domain CRUD
-│   │   │   ├── scans.py             # POST /scans, GET /scans/{id}
-│   │   │   ├── assets.py            # Filtered asset list
-│   │   │   ├── stats.py             # Stat-card aggregations
-│   │   │   └── tools.py             # Tool health check
+│   │   │   ├── domains.py        # CRUD for target domains
+│   │   │   ├── scans.py          # POST /scans, GET /scans/{id}
+│   │   │   ├── assets.py         # Filtered asset list
+│   │   │   ├── stats.py          # Stat card aggregations
+│   │   │   └── tools.py          # Tool health check
 │   │   ├── services/
-│   │   │   ├── orchestrator.py      # asyncio.gather over scanners
-│   │   │   ├── scan_manager.py      # Background task pipeline
-│   │   │   ├── wildcard.py          # Wildcard DNS detection
-│   │   │   └── diff_engine.py       # NEW / CHANGED / GONE logic
-│   │   └── scanners/                # One adapter per tool
-│   │       ├── base.py              # BaseScanner abstract class
+│   │   │   ├── orchestrator.py   # asyncio.gather over scanners
+│   │   │   ├── scan_manager.py   # Background task pipeline
+│   │   │   ├── wildcard.py       # Wildcard DNS detection
+│   │   │   └── diff_engine.py    # NEW / CHANGED / GONE logic
+│   │   └── scanners/             # One adapter per tool
+│   │       ├── base.py           # BaseScanner abstract class
 │   │       ├── subfinder.py
 │   │       ├── httpx_probe.py
 │   │       ├── shuffledns.py
 │   │       └── dnsx_resolve.py
-│   ├── tests/
-│   │   ├── conftest.py              # In-memory DB fixtures
-│   │   ├── test_diff_engine.py      # Diff engine tests
-│   │   └── test_api.py              # API tests
-│   ├── wordlists/                   # subdomains-top110k.txt, resolvers.txt
-│   ├── data/                        # recon.db (gitignored)
+│   ├── tests/                    # pytest suite (in-memory SQLite)
+│   ├── wordlists/                # subdomains-top110k.txt, resolvers.txt
+│   ├── data/                     # recon.db (SQLite, gitignored)
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx                  # Main layout
-│   │   ├── three/
-│   │   │   └── ParticleField.jsx    # Ambient starfield
+│   │   ├── App.jsx               # Main layout
+│   │   ├── three/ParticleField.jsx
 │   │   ├── components/
-│   │   │   ├── Topbar.jsx           # Domain selector + scan buttons
+│   │   │   ├── Topbar.jsx        # Domain selector and scan buttons
 │   │   │   ├── StatCards.jsx
-│   │   │   ├── FilterBar.jsx        # Status chips + toggles
+│   │   │   ├── FilterBar.jsx     # Status chips and toggles
 │   │   │   └── ResultsTable.jsx
-│   │   ├── store/
-│   │   │   └── useReconStore.js     # Zustand single source of truth
-│   │   └── services/
-│   │       └── api.js               # API client
+│   │   ├── store/useReconStore.js
+│   │   └── services/api.js       # API client
 │   ├── Dockerfile
 │   └── vite.config.js
-├── scripts/
-│   └── install_tools.sh             # One-shot tool installer
+├── scripts/install_tools.sh      # One-shot tool installer
 ├── docker-compose.yml
 ├── .gitignore
 ├── LICENSE
@@ -328,14 +320,14 @@ recon-dashboard/
 
 ## Troubleshooting
 
-| Symptom                                | Fix                                                                                          |
-| -------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `command not found` for recon tools    | Ensure `~/go/bin` and `~/.recon-tools-venv/bin` are on PATH; check `GET /api/v1/tools/health` |
-| `400` on `OPTIONS` requests (CORS)     | Open the dashboard on an allowed origin — `localhost:5173` and `127.0.0.1:5173` are different origins |
-| Scan marks everything GONE             | The empty-result guard marks such scans `failed`; inspect `GET /scans/{id}` and re-run        |
-| React "Invalid hook call"              | Duplicate React copies: `rm -rf node_modules package-lock.json && npm install`               |
-| Tools fail on native Windows           | Use WSL2 — the binaries target Linux                                                          |
-| Port already in use                    | Change ports in `docker-compose.yml`, or pass `--port` to uvicorn / `server.port` to Vite     |
+| Symptom                             | Fix                                                                                                   |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `command not found` for recon tools | Ensure `~/go/bin` and `~/.recon-tools-venv/bin` are on PATH; check `GET /api/v1/tools/health`           |
+| `400` on `OPTIONS` requests (CORS)  | Open the dashboard on an allowed origin — `localhost:5173` and `127.0.0.1:5173` are different origins  |
+| Scan marks everything GONE          | The empty-result guard marks such scans `failed`; inspect `GET /scans/{id}` and re-run                 |
+| React "Invalid hook call"           | Duplicate React copies: `rm -rf node_modules package-lock.json && npm install`                        |
+| Tools fail on native Windows        | Use WSL2 — the binaries target Linux                                                                   |
+| Port already in use                 | Change ports in `docker-compose.yml`, or pass `--port` to uvicorn / `server.port` to Vite              |
 
 ---
 

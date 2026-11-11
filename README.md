@@ -215,51 +215,59 @@ Run the same scan again. The diff engine will:
 
 ---
 
+## 🐳 Docker Support
+
+```bash
+docker-compose up --build
+
+---
 ## Project structure
 
 ```
+
 recon-dashboard/
 ├── backend/
-│   ├── app/
-│   │   ├── main.py               # FastAPI entry, lifespan, CORS
-│   │   ├── core/config.py        # Settings, gobin() path resolver
-│   │   ├── db/
-│   │   │   ├── models.py         # Domain, Scan, Asset, Observation
-│   │   │   └── session.py        # Async engine and session maker
-│   │   ├── api/v1/
-│   │   │   ├── domains.py        # CRUD for target domains
-│   │   │   ├── scans.py          # POST /scans, GET /scans/{id}
-│   │   │   ├── assets.py         # Filtered asset list
-│   │   │   ├── stats.py          # Stat card aggregations
-│   │   │   └── tools.py          # Tool health check
-│   │   ├── services/
-│   │   │   ├── orchestrator.py   # asyncio.gather over scanners
-│   │   │   ├── scan_manager.py   # Background task pipeline
-│   │   │   ├── wildcard.py       # Wildcard DNS detection
-│   │   │   └── diff_engine.py    # NEW / CHANGED / GONE logic
-│   │   └── scanners/             # One adapter per tool
-│   │       ├── base.py           # BaseScanner abstract class
-│   │       ├── subfinder.py
-│   │       ├── httpx_probe.py
-│   │       ├── shuffledns.py
-│   │       └── dnsx_resolve.py
-│   ├── wordlists/                # subdomains-top110k.txt, resolvers.txt
-│   └── data/                     # recon.db (SQLite)
+│ ├── app/
+│ │ ├── main.py # FastAPI entry, lifespan, CORS
+│ │ ├── core/config.py # Settings, gobin() path resolver
+│ │ ├── db/
+│ │ │ ├── models.py # Domain, Scan, Asset, Observation
+│ │ │ └── session.py # Async engine and session maker
+│ │ ├── api/v1/
+│ │ │ ├── domains.py # CRUD for target domains
+│ │ │ ├── scans.py # POST /scans, GET /scans/{id}
+│ │ │ ├── assets.py # Filtered asset list
+│ │ │ ├── stats.py # Stat card aggregations
+│ │ │ └── tools.py # Tool health check
+│ │ ├── services/
+│ │ │ ├── orchestrator.py # asyncio.gather over scanners
+│ │ │ ├── scan_manager.py # Background task pipeline
+│ │ │ ├── wildcard.py # Wildcard DNS detection
+│ │ │ └── diff_engine.py # NEW / CHANGED / GONE logic
+│ │ └── scanners/ # One adapter per tool
+│ │ ├── base.py # BaseScanner abstract class
+│ │ ├── subfinder.py
+│ │ ├── httpx_probe.py
+│ │ ├── shuffledns.py
+│ │ └── dnsx_resolve.py
+│ ├── wordlists/ # subdomains-top110k.txt, resolvers.txt
+│ └── data/ # recon.db (SQLite)
 ├── frontend/
-│   ├── src/
-│   │   ├── App.jsx               # Main layout
-│   │   ├── three/ParticleField.jsx
-│   │   ├── components/
-│   │   │   ├── Topbar.jsx        # Domain selector and scan buttons
-│   │   │   ├── StatCards.jsx
-│   │   │   ├── FilterBar.jsx     # Status chips and toggles
-│   │   │   └── ResultsTable.jsx
-│   │   ├── store/useReconStore.js
-│   │   └── services/api.js       # API client
-│   └── vite.config.js
-├── scripts/install_tools.sh      # One-shot tool installer
+│ ├── src/
+│ │ ├── App.jsx # Main layout
+│ │ ├── three/ParticleField.jsx
+│ │ ├── components/
+│ │ │ ├── Topbar.jsx # Domain selector and scan buttons
+│ │ │ ├── StatCards.jsx
+│ │ │ ├── FilterBar.jsx # Status chips and toggles
+│ │ │ └── ResultsTable.jsx
+│ │ ├── store/useReconStore.js
+│ │ └── services/api.js # API client
+│ └── vite.config.js
+├── scripts/install_tools.sh # One-shot tool installer
 ├── LICENSE
 └── README.md
+
 ```
 
 ---
@@ -320,3 +328,4 @@ Released under the [MIT License](LICENSE).
 If RECON//OS helps you find a bug, consider giving it a star.
 
 </div>
+```
